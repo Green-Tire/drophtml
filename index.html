@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Live Previewer</title>
+    <title>Drop HTML</title>
     <style>
         * {
             margin: 0;
@@ -63,14 +63,14 @@
             font-weight: 600;
             display: inline-block;
             transition: 0.2s;
-            pointer-events: none; /* Zorgt dat de klik doorgaat naar de container */
+            pointer-events: none;
         }
 
         #file-input { display: none; }
 
         /* Preview Scherm */
         #preview-wrapper {
-            display: none; /* Standaard verborgen */
+            display: none;
             width: 100vw;
             height: 100vh;
             flex-direction: column;
@@ -135,17 +135,14 @@
         const viewer = document.getElementById('viewer');
         const backBtn = document.getElementById('back-to-upload');
 
-        // Navigatie: Terug naar uploader
         backBtn.addEventListener('click', () => {
             previewWrapper.style.display = 'none';
             uploadScreen.style.display = 'flex';
-            fileInput.value = ''; // Reset de file input
+            fileInput.value = '';
         });
 
-        // Open file picker bij klik op zone
         dropZone.addEventListener('click', () => fileInput.click());
 
-        // Drag & Drop logica
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(name => {
             document.body.addEventListener(name, e => { e.preventDefault(); e.stopPropagation(); });
         });
@@ -167,12 +164,9 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 const content = e.target.result;
-                
-                // Schakel schermen
                 uploadScreen.style.display = 'none';
                 previewWrapper.style.display = 'flex';
 
-                // Render content
                 const doc = viewer.contentWindow.document;
                 doc.open();
                 doc.write(content);
