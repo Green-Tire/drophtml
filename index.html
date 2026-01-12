@@ -3,177 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drop HTML</title>
+    <title>Advanced HTML Previewer</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', -apple-system, system-ui, sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, system-ui, sans-serif; }
+        body { background-color: #050505; color: #ffffff; height: 100vh; overflow: hidden; }
 
-        body {
-            background-color: #050505;
-            color: #ffffff;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        /* Glazen Upload Paneel */
-        #upload-screen {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
+        /* --- Upload Scherm --- */
+        #upload-screen { 
+            display: flex; align-items: center; justify-content: center; 
+            height: 100vh; width: 100%; 
         }
 
         .glass-container {
-            background: rgba(20, 20, 20, 0.6);
+            background: rgba(20, 20, 20, 0.4); 
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 2px dashed rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            padding: 60px;
+            border: none; 
+            border-radius: 40px;
+            padding: 80px 40px;
             text-align: center;
             width: 90%;
-            max-width: 600px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 550px;
             cursor: pointer;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Rand kleur lichter gemaakt (van 0.4 naar 0.6 opacity) */
+            outline: 2px dashed rgba(255, 255, 255, 0.6); 
+            outline-offset: -20px;
         }
 
-        .glass-container.drag-over {
-            border-color: #6366f1;
-            background: rgba(99, 102, 241, 0.1);
+        .glass-container:hover {
+            outline: 2px dashed rgba(255, 255, 255, 0.9);
+            background: rgba(30, 30, 30, 0.6);
+        }
+
+        .glass-container.drag-over { 
+            outline: 3px dashed #6366f1; 
+            background: rgba(99, 102, 241, 0.15);
             transform: scale(1.02);
-            box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
         }
 
-        h2 { font-size: 1.8rem; margin-bottom: 15px; font-weight: 600; }
-        p { color: #888; margin-bottom: 30px; }
+        /* Titel aangepast naar Drop HTML */
+        h2 { font-size: 2.2rem; margin-bottom: 15px; font-weight: 600; letter-spacing: -0.5px; }
+        p { color: #aaa; margin-bottom: 35px; font-size: 1rem; }
 
-        .upload-btn {
+        .upload-btn-mock {
             background: #ffffff;
             color: #000;
-            padding: 12px 30px;
+            padding: 14px 40px;
             border-radius: 12px;
             font-weight: 600;
             display: inline-block;
+            font-size: 15px;
             transition: 0.2s;
-            pointer-events: none;
         }
 
-        #file-input { display: none; }
-
-        /* Preview Scherm */
-        #preview-wrapper {
-            display: none;
-            width: 100vw;
-            height: 100vh;
-            flex-direction: column;
-            background: #000;
-        }
-
+        /* --- Preview Interface --- */
+        #main-interface { display: none; flex-direction: column; height: 100vh; }
+        
         .toolbar {
-            height: 60px;
-            background: #111;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            border-bottom: 1px solid #222;
+            height: 60px; background: #111; display: flex; align-items: center;
+            padding: 0 20px; border-bottom: 1px solid #222; gap: 15px;
         }
 
-        .back-button {
-            background: rgba(255, 255, 255, 0.05);
-            color: #eee;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: 0.2s;
+        .btn {
+            background: rgba(255, 255, 255, 0.05); color: #eee; border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
+        }
+        .btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .btn.active { background: #6366f1; border-color: #6366f1; }
+
+        .workspace { display: flex; flex: 1; overflow: hidden; background: #000; }
+        
+        #editor-container { width: 40%; border-right: 1px solid #222; display: flex; flex-direction: column; }
+        textarea {
+            width: 100%; height: 100%; background: #0a0a0a; color: #d4d4d4;
+            border: none; padding: 20px; font-family: 'Fira Code', monospace;
+            resize: none; outline: none; font-size: 14px; line-height: 1.5;
         }
 
-        .back-button:hover {
-            background: rgba(255, 255, 255, 0.1);
+        #preview-pane { 
+            flex: 1; display: flex; align-items: center; justify-content: center; 
+            background: #1a1a1a; transition: 0.3s; position: relative;
         }
-
+        #preview-pane.dark-mode-preview { background: #000; }
+        
         iframe {
-            flex: 1;
-            width: 100%;
-            border: none;
-            background: #fff;
+            background: #fff; border: none; box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            transition: width 0.3s, height 0.3s; width: 100%; height: 100%;
         }
+
+        iframe.mobile { width: 375px; height: 667px; }
+        iframe.tablet { width: 768px; height: 1024px; }
+        iframe.desktop { width: 100%; height: 100%; }
+
     </style>
 </head>
 <body>
 
     <div id="upload-screen">
         <div class="glass-container" id="drop-zone">
-            <h2>Drop & View</h2>
+            <h2>Drop HTML</h2>
             <p>Sleep je <b>.txt</b> of <b>.html</b> bestand hierheen.</p>
-            <div class="upload-btn">Kies Bestand</div>
-            <input type="file" id="file-input" accept=".txt,.html">
+            <div class="upload-btn-mock">Kies Bestand</div>
+            <input type="file" id="file-input" accept=".txt,.html" hidden>
         </div>
     </div>
 
-    <div id="preview-wrapper">
+    <div id="main-interface">
         <div class="toolbar">
-            <button class="back-button" id="back-to-upload">← Nieuw bestand uploaden</button>
+            <button class="btn" id="back-btn">← Nieuw bestand</button>
+            <div style="width: 1px; height: 24px; background: #333; margin: 0 10px;"></div>
+            
+            <button class="btn active" onclick="setViewport('desktop', this)">Desktop</button>
+            <button class="btn" onclick="setViewport('tablet', this)">Tablet</button>
+            <button class="btn" onclick="setViewport('mobile', this)">Mobiel</button>
+            
+            <div style="flex: 1;"></div>
+
+            <button class="btn" id="toggle-editor">Code Editor [AAN]</button>
+            <button class="btn" id="toggle-dark-mode">Mode: Light</button>
         </div>
-        <iframe id="viewer"></iframe>
+
+        <div class="workspace">
+            <div id="editor-container">
+                <textarea id="code-editor" spellcheck="false" placeholder="Code wordt hier geladen..."></textarea>
+            </div>
+            <div id="preview-pane">
+                <iframe id="viewer"></iframe>
+            </div>
+        </div>
     </div>
 
     <script>
-        const uploadScreen = document.getElementById('upload-screen');
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
-        const previewWrapper = document.getElementById('preview-wrapper');
+        const mainInterface = document.getElementById('main-interface');
+        const uploadScreen = document.getElementById('upload-screen');
+        const editor = document.getElementById('code-editor');
         const viewer = document.getElementById('viewer');
-        const backBtn = document.getElementById('back-to-upload');
+        const previewPane = document.getElementById('preview-pane');
 
-        backBtn.addEventListener('click', () => {
-            previewWrapper.style.display = 'none';
-            uploadScreen.style.display = 'flex';
-            fileInput.value = '';
-        });
-
-        dropZone.addEventListener('click', () => fileInput.click());
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(name => {
-            document.body.addEventListener(name, e => { e.preventDefault(); e.stopPropagation(); });
-        });
-
-        ['dragenter', 'dragover'].forEach(name => {
-            dropZone.addEventListener(name, () => dropZone.classList.add('drag-over'));
-        });
-
-        ['dragleave', 'drop'].forEach(name => {
-            dropZone.addEventListener(name, () => dropZone.classList.remove('drag-over'));
-        });
-
-        dropZone.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
-        fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+        dropZone.onclick = () => fileInput.click();
+        fileInput.onchange = e => handleFile(e.target.files[0]);
+        
+        dropZone.ondragover = e => { e.preventDefault(); dropZone.classList.add('drag-over'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('drag-over');
+        dropZone.ondrop = e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); };
 
         function handleFile(file) {
             if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                uploadScreen.style.display = 'none';
-                previewWrapper.style.display = 'flex';
-
-                const doc = viewer.contentWindow.document;
-                doc.open();
-                doc.write(content);
-                doc.close();
-            };
-            reader.readAsText(file);
+            if (file.name.endsWith('.html') || file.name.endsWith('.txt')) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    editor.value = e.target.result;
+                    updatePreview();
+                    uploadScreen.style.display = 'none';
+                    mainInterface.style.display = 'flex';
+                };
+                reader.readAsText(file);
+            } else {
+                alert("Upload aub een .html of .txt bestand.");
+            }
         }
+
+        editor.addEventListener('input', updatePreview);
+        function updatePreview() {
+            const doc = viewer.contentWindow.document;
+            doc.open();
+            doc.write(editor.value);
+            doc.close();
+        }
+
+        function setViewport(mode, btn) {
+            viewer.className = mode;
+            document.querySelectorAll('.toolbar .btn').forEach(b => {
+                if(b.id !== 'toggle-editor' && b.id !== 'toggle-dark-mode' && b.id !== 'back-btn') {
+                    b.classList.remove('active');
+                }
+            });
+            btn.classList.add('active');
+        }
+
+        document.getElementById('toggle-editor').onclick = function() {
+            const editorDiv = document.getElementById('editor-container');
+            if (editorDiv.style.display === 'none') {
+                editorDiv.style.display = 'flex';
+                this.innerText = "Code Editor [AAN]";
+            } else {
+                editorDiv.style.display = 'none';
+                this.innerText = "Code Editor [UIT]";
+            }
+        };
+
+        document.getElementById('toggle-dark-mode').onclick = function() {
+            previewPane.classList.toggle('dark-mode-preview');
+            const isDark = previewPane.classList.contains('dark-mode-preview');
+            this.innerText = isDark ? "Mode: Dark" : "Mode: Light";
+        };
+
+        document.getElementById('back-btn').onclick = () => {
+            mainInterface.style.display = 'none';
+            uploadScreen.style.display = 'flex';
+            fileInput.value = '';
+        };
     </script>
 </body>
 </html>
